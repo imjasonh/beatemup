@@ -38,6 +38,13 @@ const (
 // Custom message for time-based updates (the game tick)
 type GameTickMsg time.Time
 
+// tickCmd returns a command that sends a GameTickMsg at the specified tick rate
+func tickCmd() tea.Cmd {
+    return tea.Tick(TickRate, func(t time.Time) tea.Msg {
+        return GameTickMsg(t)
+    })
+}
+
 // --- STYLES ---
 
 type StyleSet struct {
@@ -147,10 +154,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             // Placeholder: Create a temporary Hitbox entity
             // In a real implementation, you'd check cooldown/state
             m.Player.State = StateLightAttack
-            m.Player.AttackTimer = 0.2 * time.Second
+            m.Player.AttackTimer = time.Duration(200) * time.Millisecond
         case "k": // Strong Attack
             m.Player.State = StateStrongAttack
-            m.Player.AttackTimer = 0.5 * time.Second
+            m.Player.AttackTimer = time.Duration(500) * time.Millisecond
         }
 
     case GameTickMsg:
@@ -348,21 +355,16 @@ func (m *Model) renderGameArea() string {
         for j := range canvas[i] {
             canvas[i][j] = " "
         }
-        // Draw the ground line (visual aid)
-        if i == int(GroundLevel) {
-            for j := range canvas[i] {
-                canvas[i][j] = m.Styles.GameArea.Render("―") 
-            }
+    }
+    
+    // Draw the ground line (visual aid) - draw it first so entities can render on top
+    groundRow := int(GroundLevel)
+    if groundRow >= 0 && groundRow < len(canvas) {
+        for j := range canvas[groundRow] {
+            canvas[groundRow][j] = "―"
         }
     }
     
-    // Draw Player
-    playerChar := "P"
-    if m.Player.State == StateLightAttack { playerChar = "P!" }
-    if m.Player.State == StateStrongAttack { playerChar = "P!!" }
-    
-    m.drawChar(canvas, int(m.Player.X), int(m.Player.Y), m.Styles.Player.Render(playerChar))
-
     // Draw Entities (enemies, power-ups, etc.)
     for _, e := range m.Entities {
         // Offset entity position by CameraOffset before drawing
@@ -373,6 +375,13 @@ func (m *Model) renderGameArea() string {
             m.drawChar(canvas, renderX, renderY, e.View())
         }
     }
+    
+    // Draw Player on top of everything
+    playerChar := "P"
+    if m.Player.State == StateLightAttack { playerChar = "P!" }
+    if m.Player.State == StateStrongAttack { playerChar = "P!!" }
+    
+    m.drawChar(canvas, int(m.Player.X), int(m.Player.Y), m.Styles.Player.Render(playerChar))
     
     // Combine lines into a single string
     var sb strings.Builder
