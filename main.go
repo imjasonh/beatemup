@@ -20,6 +20,8 @@ const (
     Friction = 0.85     // Velocity decay factor
     ScrollingThreshold = 0.6 // Player X-position trigger for scrolling (e.g., 60% of screen)
     GroundLevel = 15.0  // Default Y position
+    LightAttackDuration = 200 * time.Millisecond
+    StrongAttackDuration = 500 * time.Millisecond
 )
 
 // Fixed Y-lanes for beat 'em up perspective (in terminal rows)
@@ -154,10 +156,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             // Placeholder: Create a temporary Hitbox entity
             // In a real implementation, you'd check cooldown/state
             m.Player.State = StateLightAttack
-            m.Player.AttackTimer = time.Duration(200) * time.Millisecond
+            m.Player.AttackTimer = LightAttackDuration
         case "k": // Strong Attack
             m.Player.State = StateStrongAttack
-            m.Player.AttackTimer = time.Duration(500) * time.Millisecond
+            m.Player.AttackTimer = StrongAttackDuration
         }
 
     case GameTickMsg:
