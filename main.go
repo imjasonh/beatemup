@@ -23,7 +23,7 @@ const (
 )
 
 // Fixed Y-lanes for beat 'em up perspective (in terminal rows)
-var LANE_HEIGHTS = []float64{GroundLevel - 4.0, GroundLevel, GroundLevel + 4.0}
+var LANE_HEIGHTS = []float64{GroundLevel - 6.0, GroundLevel - 2.0, GroundLevel + 2.0, GroundLevel + 6.0}
 
 // Player States
 type PlayerState int
